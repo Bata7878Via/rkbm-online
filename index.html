@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Database RKBM / RKPBMD Terintegrasi Google Sheets</title>
+    <title>Sistem Informasi RKBM / RKPBMD Terpadu</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icon CDN -->
@@ -14,39 +14,50 @@
         body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 p-4 md:p-6 min-h-screen">
+<body class="bg-slate-100 text-slate-800 p-4 md:p-6 min-h-screen relative">
+
+    <!-- NOTIFIKASI FLOATING (TOAST NOTIFICATION) -->
+    <div id="toastNotification" class="fixed top-6 right-6 z-50 flex items-center gap-3 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-2xl transition-all duration-300 transform -translate-y-24 opacity-0 pointer-events-none">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-check text-base"></i>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-100">Informasi Sistem</h4>
+            <p id="toastMessage" class="text-sm font-semibold">Data berhasil disimpan dalam database</p>
+        </div>
+    </div>
 
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Header -->
         <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-900 text-white p-6 rounded-2xl shadow-lg flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Database RKBM & RKPBMD</h1>
-                <p class="text-blue-100 text-sm mt-1">Sistem Input Usulan Terintegrasi Google Sheets & File Excel</p>
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Sistem RKBMD & RKPBMD Kab. Konawe</h1>
+                <p class="text-blue-100 text-sm mt-1">Sistem Manajemen Perencanaan & Pemeliharaan Barang Milik Daerah Terpadu</p>
             </div>
             
             <div class="flex flex-wrap items-center gap-2">
-                <!-- Tombol Akses Khusus Admin (Kamus Master) -->
+                <!-- Tombol Akses Khusus Admin -->
                 <button type="button" onclick="openAdminAuthModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs md:text-sm font-bold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-lock text-slate-800"></i> Kelola Master (Khusus Admin)
                 </button>
 
-                <!-- Tombol Refresh Data Cloud -->
+                <!-- Tombol Refresh Data Database -->
                 <button type="button" onclick="refreshAllData()" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs md:text-sm font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 cursor-pointer backdrop-blur-sm">
                     <i class="fa-solid fa-rotate text-blue-200"></i> Segarkan Data
                 </button>
             </div>
         </header>
 
-        <!-- Area Unduh Berdasarkan SKPD & Status Cloud -->
+        <!-- Area Unduh Berdasarkan SKPD & Status Koneksi Database -->
         <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs">
             <div class="flex flex-wrap items-center gap-3">
                 <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
-                    <i class="fa-solid fa-cloud mr-1.5"></i> Status Cloud:
+                    <i class="fa-solid fa-server mr-1.5"></i> Status Server:
                 </span>
                 <span id="cloudStatus" class="text-slate-600 font-medium">Menghubungkan...</span>
                 <span class="text-slate-300">|</span>
-                <span id="masterStatusBadge" class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat master...</span>
+                <span id="masterStatusBadge" class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat kamus data...</span>
             </div>
 
             <!-- FITUR: Download Sesuai SKPD Tertentu -->
@@ -83,7 +94,7 @@
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-slate-500 font-semibold uppercase">RKBM (Pengadaan)</p>
+                    <p class="text-xs text-slate-500 font-semibold uppercase">RKBMD (Pengadaan)</p>
                     <h3 id="statRkbm" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
                 </div>
                 <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
@@ -112,7 +123,7 @@
                     </div>
                     <div>
                         <h2 class="font-bold text-slate-800 text-base md:text-lg" id="formTitle">Tambah Data Usulan</h2>
-                        <p class="text-xs text-slate-500" id="formSubtitle">Data langsung tersinkron ke Google Sheets</p>
+                        <p class="text-xs text-slate-500" id="formSubtitle">Data otomatis tersimpan ke database terpusat</p>
                     </div>
                 </div>
 
@@ -123,7 +134,7 @@
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Usulan <span class="text-red-500">*</span></label>
                         <select id="jenisUsulan" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required>
                             <option value="" disabled selected>-- Pilih Jenis --</option>
-                            <option value="RKBM - Pengadaan Baru">RKBM - Pengadaan Baru</option>
+                            <option value="RKBM - Pengadaan Baru">RKBMD - Pengadaan Baru</option>
                             <option value="RKPBMD - Pemeliharaan">RKPBMD - Pemeliharaan</option>
                         </select>
                     </div>
@@ -187,7 +198,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan / Urgensi</label>
-                        <textarea id="keterangan" rows="2" placeholder="Tulis catatan atau urgensi..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white"></textarea>
+                        <textarea id="keterangan" rows="2" placeholder="Tulis catatan atau urgensi usulan..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white"></textarea>
                     </div>
 
                     <div class="flex space-x-2 pt-2">
@@ -195,56 +206,71 @@
                             Batal
                         </button>
                         <button type="submit" id="btnSubmit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm py-2.5 rounded-xl transition shadow flex justify-center items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span id="btnSubmitText">Simpan ke Google Sheets</span>
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span id="btnSubmitText">Simpan ke Database</span>
                         </button>
                     </div>
                 </form>
             </div>
 
             <!-- TABEL DATABASE HASIL INPUT (8 Kolom) -->
-            <div class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 flex flex-col justify-between">
                 
-                <!-- Filter & Search Bar Tabel -->
-                <div class="flex flex-col sm:flex-row gap-3 justify-between items-center">
-                    <div class="relative w-full sm:w-72">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="Cari barang, SKPD, kode..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-white">
+                <div class="space-y-4">
+                    <!-- Filter & Search Bar Tabel -->
+                    <div class="flex flex-col sm:flex-row gap-3 justify-between items-center">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInput" oninput="renderTable()" placeholder="Cari barang, SKPD, kode..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-white">
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <select id="filterJenis" onchange="renderTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
+                                <option value="">Semua Usulan</option>
+                                <option value="RKBM">Hanya RKBM</option>
+                                <option value="RKPBMD">Hanya RKPBMD</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <select id="filterJenis" onchange="renderTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
-                            <option value="">Semua Usulan</option>
-                            <option value="RKBM">Hanya RKBM</option>
-                            <option value="RKPBMD">Hanya RKPBMD</option>
-                        </select>
+                    <!-- Kontainer Tabel -->
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-inner max-h-[550px] overflow-y-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 sticky top-0 uppercase font-semibold border-b border-slate-200 shadow-sm z-10">
+                                <tr>
+                                    <th class="p-3 w-8 text-center">No</th>
+                                    <th class="p-3">Jenis & SKPD</th>
+                                    <th class="p-3">Barang & Kode</th>
+                                    <th class="p-3 text-center">Jumlah</th>
+                                    <th class="p-3 text-right">Harga Satuan</th>
+                                    <th class="p-3 text-right">Total Anggaran</th>
+                                    <th class="p-3 text-center w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 text-slate-700">
+                                <tr><td colspan="7" class="p-8 text-center text-slate-400 italic">Memuat data usulan dari database...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Kontainer Tabel -->
-                <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-inner max-h-[550px] overflow-y-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead class="bg-slate-50 text-slate-600 sticky top-0 uppercase font-semibold border-b border-slate-200 shadow-sm z-10">
-                            <tr>
-                                <th class="p-3 w-8 text-center">No</th>
-                                <th class="p-3">Jenis & SKPD</th>
-                                <th class="p-3">Barang & Kode</th>
-                                <th class="p-3 text-center">Jumlah</th>
-                                <th class="p-3 text-right">Harga Satuan</th>
-                                <th class="p-3 text-right">Total Anggaran</th>
-                                <th class="p-3 text-center w-24">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-100 text-slate-700">
-                            <tr><td colspan="7" class="p-8 text-center text-slate-400 italic">Memuat data...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- BAGIAN BAWAH TABEL (INFO, STATUS, & COPYRIGHT) -->
+                <div class="pt-4 border-t border-slate-100 space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-2">
+                        <span id="recordCountInfo">Menampilkan 0 usulan</span>
+                        <span class="flex items-center gap-1.5 font-medium text-emerald-600">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i> Basis Data Terpusat Aktif
+                        </span>
+                    </div>
+
+                    <!-- COPYRIGHT BANNER YANG DIMINTA (MUDAH TERLIHAT) -->
+                    <div class="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center shadow-xs">
+                        <p class="text-xs font-semibold text-slate-700 tracking-wide">
+                            &copy;Copyright 2026 <span class="text-blue-700 font-bold">Irman_Aset</span>. All rights reserved
+                        </p>
+                    </div>
                 </div>
 
-                <div class="flex justify-between items-center text-xs text-slate-400 pt-2">
-                    <span id="recordCountInfo">Menampilkan 0 usulan</span>
-                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-cloud-check text-emerald-500"></i> Database Terhubung</span>
-                </div>
             </div>
 
         </div>
@@ -261,7 +287,7 @@
                 <p class="text-xs text-slate-500">Masukkan PIN Admin untuk mengelola data master</p>
             </div>
             <div>
-                <input type="password" id="adminPinInput" placeholder="Masukkan PIN (Default: admin123)" class="w-full text-center tracking-widest text-base font-bold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:border-amber-500">
+                <input type="password" id="adminPinInput" placeholder="Masukkan PIN (Default: IrMan)" class="w-full text-center tracking-widest text-base font-bold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:border-amber-500">
                 <p id="pinErrorMsg" class="text-rose-500 text-[11px] mt-1 text-center hidden">PIN salah! Akses ditolak.</p>
             </div>
             <div class="flex space-x-2 pt-2">
@@ -277,7 +303,7 @@
             <div class="flex justify-between items-center border-b pb-3">
                 <div class="flex items-center gap-2 text-slate-800">
                     <i class="fa-solid fa-gears text-amber-500 text-lg"></i>
-                    <h3 class="font-bold text-base">Panel Pengelolaan Master Referensi</h3>
+                    <h3 class="font-bold text-base">Panel Pengelolaan Database Master</h3>
                 </div>
                 <button onclick="closeAdminMasterModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold cursor-pointer">&times;</button>
             </div>
@@ -298,21 +324,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Tambah SKPD Baru -->
                 <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-building text-blue-600"></i> Tambah SKPD Baru ke Cloud</h4>
+                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-building text-blue-600"></i> Tambah SKPD Baru</h4>
                     <input type="text" id="newSkpdInput" placeholder="Contoh: Dinas Pertanian" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
                     <button type="button" id="btnAddSkpdBtn" onclick="addSingleSKPD()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2 rounded-xl transition cursor-pointer flex justify-center items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets
+                        <i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Database
                     </button>
                     <div class="text-[11px] text-slate-500 max-h-24 overflow-y-auto border-t pt-2" id="adminSkpdPreviewList"></div>
                 </div>
 
                 <!-- Tambah Barang Baru -->
                 <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-box text-emerald-600"></i> Tambah Master Barang ke Cloud</h4>
+                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-box text-emerald-600"></i> Tambah Master Barang Baru</h4>
                     <input type="text" id="newKodeBarangInput" placeholder="Kode: 1.3.2.05.01..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-emerald-500">
                     <input type="text" id="newNamaBarangInput" placeholder="Nama Barang: Laptop Core i7..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500">
                     <button type="button" id="btnAddBarangBtn" onclick="addSingleBarang()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition cursor-pointer flex justify-center items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets
+                        <i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Database
                     </button>
                     <div class="text-[11px] text-slate-500 max-h-24 overflow-y-auto border-t pt-2" id="adminBarangPreviewList"></div>
                 </div>
@@ -327,14 +353,39 @@
     <!-- SCRIPT JAVASCRIPT LENGKAP -->
     <script>
         // =========================================================================
-        // TEMPATKAN URL HASIL DEPLOY GOOGLE APPS SCRIPT ANDA DI SINI:
+        // TEMPATKAN URL APLIKASI WEB ANDA DI SINI:
         // =========================================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxit7wl8PdhjklE3SE-qIm5wxrO2xIUNlDwktsscMgq3ZdMchcCnmDosm0zQ4gCFYnh/exec";
 
         // PIN RAHASIA ADMIN
         const ADMIN_PIN = "admin123";
 
-        // PEMBERSIH URL OTOMATIS: Membersihkan spasi atau tulisan ?action=read jika tidak sengaja tertempel
+        // FUNGSI NOTIFIKASI TOAST (MUNCUL OTOMATIS)
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            if (!toast || !toastMsg) return;
+
+            toastMsg.innerText = message;
+            
+            if (isError) {
+                toast.classList.remove('bg-emerald-600');
+                toast.classList.add('bg-rose-600');
+            } else {
+                toast.classList.remove('bg-rose-600');
+                toast.classList.add('bg-emerald-600');
+            }
+
+            toast.classList.remove('-translate-y-24', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-24', 'opacity-0', 'pointer-events-none');
+            }, 3500);
+        }
+
+        // Pembersih URL Otomatis
         function getCleanUrl() {
             let url = GOOGLE_SCRIPT_URL.trim();
             if (url.includes('?')) {
@@ -356,7 +407,6 @@
 
         let usulanDb = [];
 
-        // Data Awal Kosong (Akan Mengikuti Isi Google Sheets Secara Penuh)
         let masterData = {
             skpdList: [],
             barangList: []
@@ -417,19 +467,19 @@
                 dlSkpdSelect.innerHTML = optionsHtml;
             }
 
-            safeSetHTML('masterStatusBadge', `${masterData.skpdList.length} SKPD &bull; ${masterData.barangList.length} Master Barang (Google Sheets)`);
+            safeSetHTML('masterStatusBadge', `${masterData.skpdList.length} SKPD &bull; ${masterData.barangList.length} Master Barang Siap`);
             renderAdminPreviewLists();
         }
 
-        // MEMBACA MASTER DARI GOOGLE SHEETS
+        // MEMBACA MASTER DARI DATABASE
         async function loadMasterFromSheets() {
             const url = getCleanUrl();
             if (url.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                safeSetHTML('masterStatusBadge', 'Mode Demo: URL Google Apps Script belum diganti');
+                safeSetHTML('masterStatusBadge', 'Mode Demo: URL API belum dikonfigurasi');
                 return;
             }
 
-            safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil master dari Google Sheets...');
+            safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat master database...');
 
             try {
                 const res = await fetch(`${url}?action=read_master`);
@@ -440,16 +490,16 @@
                     populateDatalists();
                 }
             } catch (err) {
-                console.warn("Gagal mengambil master cloud:", err);
-                safeSetHTML('masterStatusBadge', '<span class="text-rose-500">Gagal memuat master dari Sheets</span>');
+                console.warn("Gagal memuat master:", err);
+                safeSetHTML('masterStatusBadge', '<span class="text-rose-500">Gagal memuat kamus data</span>');
             }
         }
 
-        // MEMBACA DATA USULAN DARI GOOGLE SHEETS
+        // MEMBACA DATA USULAN DARI DATABASE
         async function loadDataFromSheets() {
             const tbody = document.getElementById('tableBody');
             if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengambil data dari Google Sheets...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data usulan dari database...</td></tr>`;
             }
 
             const url = getCleanUrl();
@@ -465,12 +515,12 @@
                     usulanDb = (json.data || []).reverse();
                     renderTable();
                     updateStats();
-                    safeSetText('cloudStatus', 'Terhubung ke Google Sheets');
+                    safeSetText('cloudStatus', 'Terhubung ke Database Pusat');
                 }
             } catch (err) {
                 console.error(err);
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-rose-500 italic">Gagal terhubung ke Google Sheets. Periksa URL Anda.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-rose-500 italic">Gagal terhubung ke database. Periksa URL koneksi.</td></tr>`;
                 }
             }
         }
@@ -546,7 +596,7 @@
         // DOWNLOAD EXCEL BERDASARKAN SKPD YANG DIPILIH
         function exportToExcelBySKPD() {
             if (usulanDb.length === 0) {
-                alert("Belum ada data usulan untuk diekspor!");
+                showToast("Belum ada data usulan untuk diekspor!", true);
                 return;
             }
 
@@ -561,7 +611,7 @@
             }
 
             if (dataToExport.length === 0) {
-                alert(`Tidak ditemukan data usulan untuk SKPD: "${selectedSkpd}".`);
+                showToast(`Tidak ditemukan data usulan untuk SKPD terpilih.`, true);
                 return;
             }
 
@@ -614,14 +664,17 @@
             document.getElementById('adminMasterModal')?.classList.add('hidden');
         }
 
-        // TAMBAH SKPD KE GOOGLE SHEETS
+        // TAMBAH SKPD KE DATABASE
         async function addSingleSKPD() {
             const val = (document.getElementById('newSkpdInput')?.value || '').trim();
-            if (!val) return alert("Ketik nama SKPD terlebih dahulu.");
+            if (!val) {
+                showToast("Ketik nama SKPD terlebih dahulu.", true);
+                return;
+            }
             
             const btn = document.getElementById('btnAddSkpdBtn');
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheets...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
 
             try {
                 await fetch(getCleanUrl(), {
@@ -632,26 +685,29 @@
                 });
 
                 document.getElementById('newSkpdInput').value = "";
-                alert(`✓ SKPD "${val}" berhasil dikirim ke Google Sheets!`);
+                showToast(`SKPD "${val}" berhasil ditambahkan ke database!`);
                 await new Promise(r => setTimeout(r, 1200));
                 await loadMasterFromSheets();
             } catch (err) {
-                alert("Gagal menambahkan SKPD: " + err.message);
+                showToast("Gagal menambahkan SKPD: " + err.message, true);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets`;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Database`;
             }
         }
 
-        // TAMBAH BARANG KE GOOGLE SHEETS
+        // TAMBAH BARANG KE DATABASE
         async function addSingleBarang() {
             const kode = (document.getElementById('newKodeBarangInput')?.value || '').trim();
             const nama = (document.getElementById('newNamaBarangInput')?.value || '').trim();
-            if (!nama) return alert("Nama Barang tidak boleh kosong.");
+            if (!nama) {
+                showToast("Nama Barang tidak boleh kosong.", true);
+                return;
+            }
 
             const btn = document.getElementById('btnAddBarangBtn');
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheets...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
 
             try {
                 await fetch(getCleanUrl(), {
@@ -663,29 +719,29 @@
 
                 document.getElementById('newKodeBarangInput').value = "";
                 document.getElementById('newNamaBarangInput').value = "";
-                alert(`✓ Barang "${nama}" berhasil dikirim ke Google Sheets!`);
+                showToast(`Barang "${nama}" berhasil ditambahkan ke database!`);
                 await new Promise(r => setTimeout(r, 1200));
                 await loadMasterFromSheets();
             } catch (err) {
-                alert("Gagal menambahkan barang: " + err.message);
+                showToast("Gagal menambahkan barang: " + err.message, true);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets`;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Database`;
             }
         }
 
         function renderAdminPreviewLists() {
             const skpdBox = document.getElementById('adminSkpdPreviewList');
             if (skpdBox) {
-                skpdBox.innerHTML = `Total ${masterData.skpdList.length} SKPD di Sheets: ` + masterData.skpdList.slice(-5).join(', ') + '...';
+                skpdBox.innerHTML = `Total ${masterData.skpdList.length} SKPD di Database: ` + masterData.skpdList.slice(-5).join(', ') + '...';
             }
             const brgBox = document.getElementById('adminBarangPreviewList');
             if (brgBox) {
-                brgBox.innerHTML = `Total ${masterData.barangList.length} Barang di Sheets: ` + masterData.barangList.slice(-3).map(b => b.nama).join(', ') + '...';
+                brgBox.innerHTML = `Total ${masterData.barangList.length} Barang di Database: ` + masterData.barangList.slice(-3).map(b => b.nama).join(', ') + '...';
             }
         }
 
-        // SIMPAN / UPDATE USULAN KE GOOGLE SHEETS
+        // SIMPAN / UPDATE USULAN KE DATABASE
         document.getElementById('rkbmForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -710,7 +766,7 @@
             const btnSubmit = document.getElementById('btnSubmit');
             if (btnSubmit) {
                 btnSubmit.disabled = true;
-                btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Menyimpan ke Cloud...`;
+                btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Menyimpan ke Database...`;
             }
 
             try {
@@ -721,16 +777,16 @@
                     body: JSON.stringify(payload)
                 });
 
-                alert("✓ Data berhasil tersimpan ke Google Sheets!");
+                showToast("Data berhasil disimpan dalam database!");
                 resetForm();
                 await new Promise(r => setTimeout(r, 1200));
                 await loadDataFromSheets();
             } catch (err) {
-                alert("Gagal mengirim ke Google Sheets: " + err.message);
+                showToast("Gagal menyimpan ke database: " + err.message, true);
             } finally {
                 if (btnSubmit) {
                     btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span id="btnSubmitText">Simpan ke Google Sheets</span>`;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span id="btnSubmitText">Simpan ke Database</span>`;
                 }
             }
         });
@@ -758,7 +814,7 @@
 
             safeSetText('formTitle', "Edit Data Usulan");
             safeSetText('formSubtitle', "Mengubah usulan: " + item.namaBarang);
-            safeSetText('btnSubmitText', "Simpan Perubahan ke Cloud");
+            safeSetText('btnSubmitText', "Simpan Perubahan ke Database");
             
             const btnCancel = document.getElementById('btnCancel');
             if (btnCancel) btnCancel.classList.remove('hidden');
@@ -767,7 +823,7 @@
         }
 
         async function deleteData(id) {
-            if (!confirm("Hapus usulan ini secara permanen?")) return;
+            if (!confirm("Hapus usulan ini secara permanen dari database?")) return;
 
             try {
                 await fetch(getCleanUrl(), {
@@ -776,11 +832,11 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "delete", id: id })
                 });
-                alert("✓ Usulan berhasil dihapus dari Google Sheets.");
+                showToast("Data berhasil dihapus dari database!");
                 await new Promise(r => setTimeout(r, 1200));
                 await loadDataFromSheets();
             } catch (err) {
-                alert("Gagal menghapus data: " + err.message);
+                showToast("Gagal menghapus data: " + err.message, true);
             }
         }
 
@@ -793,14 +849,14 @@
 
             safeSetText('labelTotalAnggaran', "Rp 0");
             safeSetText('formTitle', "Tambah Data Usulan");
-            safeSetText('formSubtitle', "Data langsung tersinkron ke Google Sheets");
-            safeSetText('btnSubmitText', "Simpan ke Google Sheets");
+            safeSetText('formSubtitle', "Data otomatis tersimpan ke database terpusat");
+            safeSetText('btnSubmitText', "Simpan ke Database");
 
             const btnCancel = document.getElementById('btnCancel');
             if (btnCancel) btnCancel.classList.add('hidden');
         }
 
-        // Inisialisasi: Mengambil Master & Usulan langsung dari Google Sheets
+        // Inisialisasi: Mengambil Master & Usulan langsung dari Database
         window.addEventListener('DOMContentLoaded', () => {
             loadMasterFromSheets();
             loadDataFromSheets();
