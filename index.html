@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Informasi RKBM / RKPBMD Terpadu</title>
+    <title>Sistem Informasi  / RKPBMD Terpadu</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icon CDN -->
@@ -32,7 +32,7 @@
         <!-- Header -->
         <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-900 text-white p-6 rounded-2xl shadow-lg flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Sistem RKBMD & RKPBMD Kab. Konawe</h1>
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Sistem D & RKPBMD Kab. Konawe</h1>
                 <p class="text-blue-100 text-sm mt-1">Sistem Manajemen Perencanaan & Pemeliharaan Barang Milik Daerah Terpadu</p>
             </div>
             
@@ -94,8 +94,8 @@
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-slate-500 font-semibold uppercase">RKBMD (Pengadaan)</p>
-                    <h3 id="statRkbm" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
+                    <p class="text-xs text-slate-500 font-semibold uppercase">D (Pengadaan)</p>
+                    <h3 id="stat" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
                 </div>
                 <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
                     <i class="fa-solid fa-cart-plus"></i>
@@ -127,14 +127,14 @@
                     </div>
                 </div>
 
-                <form id="rkbmForm" class="space-y-4">
+                <form id="Form" class="space-y-4">
                     <input type="hidden" id="editId" value="">
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Usulan <span class="text-red-500">*</span></label>
                         <select id="jenisUsulan" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required>
                             <option value="" disabled selected>-- Pilih Jenis --</option>
-                            <option value="RKBM - Pengadaan Baru">RKBMD - Pengadaan Baru</option>
+                            <option value="D - Pengadaan Baru">D - Pengadaan Baru</option>
                             <option value="RKPBMD - Pemeliharaan">RKPBMD - Pemeliharaan</option>
                         </select>
                     </div>
@@ -227,7 +227,7 @@
                         <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                             <select id="filterJenis" onchange="renderTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
                                 <option value="">Semua Usulan</option>
-                                <option value="RKBM">Hanya RKBM</option>
+                                <option value="D">Hanya D</option>
                                 <option value="RKPBMD">Hanya RKPBMD</option>
                             </select>
                         </div>
@@ -534,7 +534,7 @@
             safeSetText('statTotalItems', usulanDb.length);
             const totalAnggaran = usulanDb.reduce((acc, curr) => acc + (Number(curr.anggaran) || 0), 0);
             safeSetText('statTotalBudget', formatIDR(totalAnggaran));
-            safeSetText('statRkbm', usulanDb.filter(i => String(i.jenisUsulan).includes("RKBM")).length);
+            safeSetText('stat', usulanDb.filter(i => String(i.jenisUsulan).includes("")).length);
             safeSetText('statRkpbm', usulanDb.filter(i => String(i.jenisUsulan).includes("RKPBMD")).length);
         }
 
@@ -565,7 +565,7 @@
             filtered.forEach((item, index) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                const badgeColor = String(item.jenisUsulan).includes("RKBM") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200";
+                const badgeColor = String(item.jenisUsulan).includes("") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200";
 
                 tr.innerHTML = `
                     <td class="p-3 text-center text-slate-400 font-mono">${index + 1}</td>
@@ -602,12 +602,12 @@
 
             const selectedSkpd = document.getElementById('downloadSkpdFilter')?.value || "SEMUA";
             let dataToExport = usulanDb;
-            let filePrefix = "Rekap_RKBM_Semua_SKPD";
+            let filePrefix = "Rekap__Semua_SKPD";
 
             if (selectedSkpd !== "SEMUA") {
                 dataToExport = usulanDb.filter(i => String(i.skpd).trim().toLowerCase() === selectedSkpd.trim().toLowerCase());
                 const safeName = selectedSkpd.replace(/[^a-zA-Z0-9]/g, "_");
-                filePrefix = `Rekap_RKBM_${safeName}`;
+                filePrefix = `Rekap__${safeName}`;
             }
 
             if (dataToExport.length === 0) {
@@ -742,7 +742,7 @@
         }
 
         // SIMPAN / UPDATE USULAN KE DATABASE
-        document.getElementById('rkbmForm')?.addEventListener('submit', async function(e) {
+        document.getElementById('Form')?.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const editId = document.getElementById('editId')?.value || "";
@@ -841,7 +841,7 @@
         }
 
         function resetForm() {
-            const form = document.getElementById('rkbmForm');
+            const form = document.getElementById('Form');
             if (form) form.reset();
 
             const editId = document.getElementById('editId');
