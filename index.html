@@ -46,7 +46,7 @@
                 </span>
                 <span id="cloudStatus" class="text-slate-600 font-medium">Menghubungkan...</span>
                 <span class="text-slate-300">|</span>
-                <span id="masterStatusBadge" class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil data master dari Google Sheets...</span>
+                <span id="masterStatusBadge" class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat master...</span>
             </div>
 
             <!-- FITUR: Download Sesuai SKPD Tertentu -->
@@ -131,7 +131,7 @@
                     <!-- Input SKPD -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama SKPD / Unit Kerja <span class="text-red-500">*</span></label>
-                        <input type="text" id="skpd" list="skpdOptions" placeholder="Ketik atau pilih SKPD dari Sheets..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required>
+                        <input type="text" id="skpd" list="skpdOptions" placeholder="Ketik atau pilih SKPD..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required>
                         <datalist id="skpdOptions"></datalist>
                     </div>
 
@@ -142,7 +142,7 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase">Nama Barang <span class="text-red-500">*</span></label>
                                 <span class="text-[10px] text-emerald-600 font-medium">Otomatis Kode</span>
                             </div>
-                            <input type="text" id="namaBarang" list="namaBarangOptions" oninput="onNamaBarangChange()" placeholder="Ketik Nama Barang dari Sheets..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" required>
+                            <input type="text" id="namaBarang" list="namaBarangOptions" oninput="onNamaBarangChange()" placeholder="Ketik Nama Barang..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" required>
                             <datalist id="namaBarangOptions"></datalist>
                         </div>
 
@@ -327,12 +327,21 @@
     <!-- SCRIPT JAVASCRIPT LENGKAP -->
     <script>
         // =========================================================================
-        // TEMPATKAN URL GOOGLE APPS SCRIPT ANDA DI SINI:
+        // TEMPATKAN URL HASIL DEPLOY GOOGLE APPS SCRIPT ANDA DI SINI:
         // =========================================================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyRSXBheQDpN21z8oNgLg4Zm8oFvW_0yQOv94u_WzjZE5dzbjyws3xmItlVVjhTIm0/execc";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxit7wl8PdhjklE3SE-qIm5wxrO2xIUNlDwktsscMgq3ZdMchcCnmDosm0zQ4gCFYnh/exec";
 
         // PIN RAHASIA ADMIN
         const ADMIN_PIN = "admin123";
+
+        // PEMBERSIH URL OTOMATIS: Membersihkan spasi atau tulisan ?action=read jika tidak sengaja tertempel
+        function getCleanUrl() {
+            let url = GOOGLE_SCRIPT_URL.trim();
+            if (url.includes('?')) {
+                url = url.split('?')[0];
+            }
+            return url;
+        }
 
         // Helper Perlindungan Anti-Null
         function safeSetText(id, text) {
@@ -347,7 +356,7 @@
 
         let usulanDb = [];
 
-        // Data Awal Kosong (Akan Terisi Otomatis Mengikuti Isi Google Sheets)
+        // Data Awal Kosong (Akan Mengikuti Isi Google Sheets Secara Penuh)
         let masterData = {
             skpdList: [],
             barangList: []
@@ -414,7 +423,8 @@
 
         // MEMBACA MASTER DARI GOOGLE SHEETS
         async function loadMasterFromSheets() {
-            if (GOOGLE_SCRIPT_URL.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
+            const url = getCleanUrl();
+            if (url.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
                 safeSetHTML('masterStatusBadge', 'Mode Demo: URL Google Apps Script belum diganti');
                 return;
             }
@@ -422,7 +432,7 @@
             safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil master dari Google Sheets...');
 
             try {
-                const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=read_master`);
+                const res = await fetch(`${url}?action=read_master`);
                 const json = await res.json();
                 if (json.status === "success") {
                     masterData.skpdList = json.skpdList || [];
@@ -442,13 +452,14 @@
                 tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengambil data dari Google Sheets...</td></tr>`;
             }
 
-            if (GOOGLE_SCRIPT_URL.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
+            const url = getCleanUrl();
+            if (url.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
                 safeSetText('cloudStatus', 'Mode Demo');
                 return;
             }
 
             try {
-                const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=read`);
+                const res = await fetch(`${url}?action=read`);
                 const json = await res.json();
                 if (json.status === "success") {
                     usulanDb = (json.data || []).reverse();
@@ -613,14 +624,16 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheets...`;
 
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetch(getCleanUrl(), {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "add_master_skpd", skpd: val })
                 });
 
                 document.getElementById('newSkpdInput').value = "";
-                alert(`✓ SKPD "${val}" berhasil ditambahkan langsung ke Google Sheets!`);
+                alert(`✓ SKPD "${val}" berhasil dikirim ke Google Sheets!`);
+                await new Promise(r => setTimeout(r, 1200));
                 await loadMasterFromSheets();
             } catch (err) {
                 alert("Gagal menambahkan SKPD: " + err.message);
@@ -641,15 +654,17 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheets...`;
 
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetch(getCleanUrl(), {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "add_master_barang", kodeBarang: kode, namaBarang: nama })
                 });
 
                 document.getElementById('newKodeBarangInput').value = "";
                 document.getElementById('newNamaBarangInput').value = "";
-                alert(`✓ Barang "${nama}" berhasil ditambahkan ke Google Sheets!`);
+                alert(`✓ Barang "${nama}" berhasil dikirim ke Google Sheets!`);
+                await new Promise(r => setTimeout(r, 1200));
                 await loadMasterFromSheets();
             } catch (err) {
                 alert("Gagal menambahkan barang: " + err.message);
@@ -699,14 +714,16 @@
             }
 
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetch(getCleanUrl(), {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
                 alert("✓ Data berhasil tersimpan ke Google Sheets!");
                 resetForm();
+                await new Promise(r => setTimeout(r, 1200));
                 await loadDataFromSheets();
             } catch (err) {
                 alert("Gagal mengirim ke Google Sheets: " + err.message);
@@ -753,12 +770,14 @@
             if (!confirm("Hapus usulan ini secara permanen?")) return;
 
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetch(getCleanUrl(), {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "delete", id: id })
                 });
                 alert("✓ Usulan berhasil dihapus dari Google Sheets.");
+                await new Promise(r => setTimeout(r, 1200));
                 await loadDataFromSheets();
             } catch (err) {
                 alert("Gagal menghapus data: " + err.message);
