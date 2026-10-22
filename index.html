@@ -44,9 +44,9 @@
                 <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
                     <i class="fa-solid fa-cloud mr-1.5"></i> Status Cloud:
                 </span>
-                <span id="cloudStatus" class="text-slate-600 font-medium">Siap Digunakan</span>
+                <span id="cloudStatus" class="text-slate-600 font-medium">Menghubungkan...</span>
                 <span class="text-slate-300">|</span>
-                <span id="masterStatusBadge" class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat master...</span>
+                <span id="masterStatusBadge" class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil data master dari Google Sheets...</span>
             </div>
 
             <!-- FITUR: Download Sesuai SKPD Tertentu -->
@@ -131,7 +131,7 @@
                     <!-- Input SKPD -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama SKPD / Unit Kerja <span class="text-red-500">*</span></label>
-                        <input type="text" id="skpd" list="skpdOptions" placeholder="Ketik atau pilih SKPD..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required>
+                        <input type="text" id="skpd" list="skpdOptions" placeholder="Ketik atau pilih SKPD dari Sheets..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required>
                         <datalist id="skpdOptions"></datalist>
                     </div>
 
@@ -142,7 +142,7 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase">Nama Barang <span class="text-red-500">*</span></label>
                                 <span class="text-[10px] text-emerald-600 font-medium">Otomatis Kode</span>
                             </div>
-                            <input type="text" id="namaBarang" list="namaBarangOptions" oninput="onNamaBarangChange()" placeholder="Ketik Nama Barang..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" required>
+                            <input type="text" id="namaBarang" list="namaBarangOptions" oninput="onNamaBarangChange()" placeholder="Ketik Nama Barang dari Sheets..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" required>
                             <datalist id="namaBarangOptions"></datalist>
                         </div>
 
@@ -298,21 +298,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Tambah SKPD Baru -->
                 <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-building text-blue-600"></i> Tambah SKPD Baru</h4>
+                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-building text-blue-600"></i> Tambah SKPD Baru ke Cloud</h4>
                     <input type="text" id="newSkpdInput" placeholder="Contoh: Dinas Pertanian" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
-                    <button type="button" onclick="addSingleSKPD()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2 rounded-xl transition cursor-pointer">
-                        + Tambah ke Daftar SKPD
+                    <button type="button" id="btnAddSkpdBtn" onclick="addSingleSKPD()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2 rounded-xl transition cursor-pointer flex justify-center items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets
                     </button>
                     <div class="text-[11px] text-slate-500 max-h-24 overflow-y-auto border-t pt-2" id="adminSkpdPreviewList"></div>
                 </div>
 
                 <!-- Tambah Barang Baru -->
                 <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-box text-emerald-600"></i> Tambah Master Barang Baru</h4>
+                    <h4 class="font-bold text-xs text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-box text-emerald-600"></i> Tambah Master Barang ke Cloud</h4>
                     <input type="text" id="newKodeBarangInput" placeholder="Kode: 1.3.2.05.01..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-emerald-500">
                     <input type="text" id="newNamaBarangInput" placeholder="Nama Barang: Laptop Core i7..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500">
-                    <button type="button" onclick="addSingleBarang()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition cursor-pointer">
-                        + Tambah ke Master Barang
+                    <button type="button" id="btnAddBarangBtn" onclick="addSingleBarang()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition cursor-pointer flex justify-center items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets
                     </button>
                     <div class="text-[11px] text-slate-500 max-h-24 overflow-y-auto border-t pt-2" id="adminBarangPreviewList"></div>
                 </div>
@@ -329,12 +329,12 @@
         // =========================================================================
         // TEMPATKAN URL GOOGLE APPS SCRIPT ANDA DI SINI:
         // =========================================================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyRSXBheQDpN21z8oNgLg4Zm8oFvW_0yQOv94u_WzjZE5dzbjyws3xmItlVVjhTIm0/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyRSXBheQDpN21z8oNgLg4Zm8oFvW_0yQOv94u_WzjZE5dzbjyws3xmItlVVjhTIm0/execc";
 
-        // PIN RAHASIA ADMIN (Silakan ganti sesuai keinginan):
+        // PIN RAHASIA ADMIN
         const ADMIN_PIN = "admin123";
 
-        // Fungsi Helper Perlindungan Anti-Null
+        // Helper Perlindungan Anti-Null
         function safeSetText(id, text) {
             const el = document.getElementById(id);
             if (el) el.innerText = text;
@@ -347,21 +347,10 @@
 
         let usulanDb = [];
 
-        // Master Data Cadangan (Jika koneksi cloud sedang lambat)
-        let masterData = JSON.parse(localStorage.getItem('RKBM_MASTER_REF')) || {
-            skpdList: [
-                "Dinas Pendidikan",
-                "Dinas Kesehatan",
-                "Dinas Komunikasi dan Informatika",
-                "Badan Pengelola Keuangan dan Aset Daerah",
-                "Sekretariat Daerah"
-            ],
-            barangList: [
-                { kode: "1.3.2.05.01.01", nama: "Laptop Core i5" },
-                { kode: "1.3.2.05.01.02", nama: "Komputer PC All-in-One" },
-                { kode: "1.3.2.02.01.01", nama: "AC Split 1.5 PK" },
-                { kode: "1.3.2.03.01.01", nama: "Meja Kerja Kantor" }
-            ]
+        // Data Awal Kosong (Akan Terisi Otomatis Mengikuti Isi Google Sheets)
+        let masterData = {
+            skpdList: [],
+            barangList: []
         };
 
         const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
@@ -410,7 +399,6 @@
                 kodeOpt.innerHTML = masterData.barangList.map(b => `<option value="${b.kode}">${b.nama}</option>`).join('');
             }
 
-            // Update Dropdown Filter Unduh Per SKPD
             const dlSkpdSelect = document.getElementById('downloadSkpdFilter');
             if (dlSkpdSelect) {
                 let optionsHtml = `<option value="SEMUA">-- Semua SKPD (${masterData.skpdList.length}) --</option>`;
@@ -420,39 +408,34 @@
                 dlSkpdSelect.innerHTML = optionsHtml;
             }
 
-            safeSetHTML('masterStatusBadge', `${masterData.skpdList.length} SKPD &bull; ${masterData.barangList.length} Master Barang`);
+            safeSetHTML('masterStatusBadge', `${masterData.skpdList.length} SKPD &bull; ${masterData.barangList.length} Master Barang (Google Sheets)`);
             renderAdminPreviewLists();
         }
 
-        // =========================================================================
-        // LANGKAH 3: MEMBACA MASTER LANGSUNG DARI GOOGLE SHEETS
-        // =========================================================================
+        // MEMBACA MASTER DARI GOOGLE SHEETS
         async function loadMasterFromSheets() {
             if (GOOGLE_SCRIPT_URL.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                populateDatalists();
+                safeSetHTML('masterStatusBadge', 'Mode Demo: URL Google Apps Script belum diganti');
                 return;
             }
 
-            safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil master dari Cloud...');
+            safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil master dari Google Sheets...');
 
             try {
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=read_master`);
                 const json = await res.json();
                 if (json.status === "success") {
-                    if (json.skpdList && json.skpdList.length > 0) masterData.skpdList = json.skpdList;
-                    if (json.barangList && json.barangList.length > 0) masterData.barangList = json.barangList;
-
-                    // Simpan sebagai cache lokal agar cepat dibuka di masa mendatang
-                    localStorage.setItem('RKBM_MASTER_REF', JSON.stringify(masterData));
+                    masterData.skpdList = json.skpdList || [];
+                    masterData.barangList = json.barangList || [];
                     populateDatalists();
                 }
             } catch (err) {
-                console.warn("Gagal mengambil master cloud, menggunakan cache lokal:", err);
-                populateDatalists();
+                console.warn("Gagal mengambil master cloud:", err);
+                safeSetHTML('masterStatusBadge', '<span class="text-rose-500">Gagal memuat master dari Sheets</span>');
             }
         }
 
-        // Membaca Data Usulan dari Google Sheets
+        // MEMBACA DATA USULAN DARI GOOGLE SHEETS
         async function loadDataFromSheets() {
             const tbody = document.getElementById('tableBody');
             if (tbody) {
@@ -460,10 +443,7 @@
             }
 
             if (GOOGLE_SCRIPT_URL.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                usulanDb = JSON.parse(localStorage.getItem('RKBM_LOCAL_FALLBACK')) || [];
-                renderTable();
-                updateStats();
-                safeSetText('cloudStatus', 'Mode Demo (Belum pasang URL Google Sheets)');
+                safeSetText('cloudStatus', 'Mode Demo');
                 return;
             }
 
@@ -552,9 +532,7 @@
             });
         }
 
-        // ========================================================
         // DOWNLOAD EXCEL BERDASARKAN SKPD YANG DIPILIH
-        // ========================================================
         function exportToExcelBySKPD() {
             if (usulanDb.length === 0) {
                 alert("Belum ada data usulan untuk diekspor!");
@@ -598,9 +576,7 @@
             XLSX.writeFile(wb, `${filePrefix}_${today}.xlsx`);
         }
 
-        // ========================================================
-        // MODAL PIN & KELOLA MASTER KHUSUS ADMIN
-        // ========================================================
+        // MODAL PIN ADMIN
         function openAdminAuthModal() {
             document.getElementById('pinErrorMsg')?.classList.add('hidden');
             const pinInput = document.getElementById('adminPinInput');
@@ -627,89 +603,74 @@
             document.getElementById('adminMasterModal')?.classList.add('hidden');
         }
 
-        function addSingleSKPD() {
+        // TAMBAH SKPD KE GOOGLE SHEETS
+        async function addSingleSKPD() {
             const val = (document.getElementById('newSkpdInput')?.value || '').trim();
             if (!val) return alert("Ketik nama SKPD terlebih dahulu.");
             
-            if (masterData.skpdList.includes(val)) {
-                return alert("Nama SKPD ini sudah ada di daftar!");
-            }
+            const btn = document.getElementById('btnAddSkpdBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheets...`;
 
-            masterData.skpdList.push(val);
-            saveMasterToStorage();
-            document.getElementById('newSkpdInput').value = "";
-            alert(`✓ SKPD "${val}" berhasil ditambahkan.`);
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: "add_master_skpd", skpd: val })
+                });
+
+                document.getElementById('newSkpdInput').value = "";
+                alert(`✓ SKPD "${val}" berhasil ditambahkan langsung ke Google Sheets!`);
+                await loadMasterFromSheets();
+            } catch (err) {
+                alert("Gagal menambahkan SKPD: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets`;
+            }
         }
 
-        function addSingleBarang() {
+        // TAMBAH BARANG KE GOOGLE SHEETS
+        async function addSingleBarang() {
             const kode = (document.getElementById('newKodeBarangInput')?.value || '').trim();
             const nama = (document.getElementById('newNamaBarangInput')?.value || '').trim();
             if (!nama) return alert("Nama Barang tidak boleh kosong.");
 
-            masterData.barangList.push({ kode, nama });
-            saveMasterToStorage();
-            document.getElementById('newKodeBarangInput').value = "";
-            document.getElementById('newNamaBarangInput').value = "";
-            alert(`✓ Barang "${nama}" berhasil ditambahkan ke master.`);
-        }
+            const btn = document.getElementById('btnAddBarangBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheets...`;
 
-        function saveMasterToStorage() {
-            localStorage.setItem('RKBM_MASTER_REF', JSON.stringify(masterData));
-            populateDatalists();
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: "add_master_barang", kodeBarang: kode, namaBarang: nama })
+                });
+
+                document.getElementById('newKodeBarangInput').value = "";
+                document.getElementById('newNamaBarangInput').value = "";
+                alert(`✓ Barang "${nama}" berhasil ditambahkan ke Google Sheets!`);
+                await loadMasterFromSheets();
+            } catch (err) {
+                alert("Gagal menambahkan barang: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> + Simpan ke Google Sheets`;
+            }
         }
 
         function renderAdminPreviewLists() {
             const skpdBox = document.getElementById('adminSkpdPreviewList');
             if (skpdBox) {
-                skpdBox.innerHTML = `Total ${masterData.skpdList.length} SKPD: ` + masterData.skpdList.slice(-5).join(', ') + '...';
+                skpdBox.innerHTML = `Total ${masterData.skpdList.length} SKPD di Sheets: ` + masterData.skpdList.slice(-5).join(', ') + '...';
             }
             const brgBox = document.getElementById('adminBarangPreviewList');
             if (brgBox) {
-                brgBox.innerHTML = `Total ${masterData.barangList.length} Barang: ` + masterData.barangList.slice(-3).map(b => b.nama).join(', ') + '...';
+                brgBox.innerHTML = `Total ${masterData.barangList.length} Barang di Sheets: ` + masterData.barangList.slice(-3).map(b => b.nama).join(', ') + '...';
             }
         }
 
-        function handleMasterExcelUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    let newSkpd = [];
-                    let newBarang = [];
-
-                    workbook.SheetNames.forEach(sheetName => {
-                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-                        json.forEach(row => {
-                            const skpd = row["Nama SKPD"] || row["SKPD"];
-                            if (skpd && !newSkpd.includes(skpd)) newSkpd.push(skpd);
-
-                            const nama = row["Nama Barang"] || row["Uraian Barang"];
-                            const kode = row["Kode Barang"] || "";
-                            if (nama) newBarang.push({ kode: String(kode).trim(), nama: String(nama).trim() });
-                        });
-                    });
-
-                    if (newSkpd.length > 0) masterData.skpdList = newSkpd;
-                    if (newBarang.length > 0) masterData.barangList = newBarang;
-
-                    saveMasterToStorage();
-                    alert(`✓ Berhasil memuat Master Masal!\n- ${masterData.skpdList.length} SKPD\n- ${masterData.barangList.length} Barang.`);
-                } catch (err) {
-                    alert("Gagal membaca file Excel Master.");
-                } finally {
-                    event.target.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // ========================================================
         // SIMPAN / UPDATE USULAN KE GOOGLE SHEETS
-        // ========================================================
         document.getElementById('rkbmForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -735,25 +696,6 @@
             if (btnSubmit) {
                 btnSubmit.disabled = true;
                 btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Menyimpan ke Cloud...`;
-            }
-
-            if (GOOGLE_SCRIPT_URL.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                if (actionType === "update") {
-                    const idx = usulanDb.findIndex(i => String(i.id) === String(editId));
-                    if (idx !== -1) usulanDb[idx] = payload;
-                } else {
-                    usulanDb.unshift(payload);
-                }
-                localStorage.setItem('RKBM_LOCAL_FALLBACK', JSON.stringify(usulanDb));
-                alert("✓ Usulan tersimpan (Mode Demo Lokal)!");
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span id="btnSubmitText">Simpan ke Google Sheets</span>`;
-                }
-                resetForm();
-                renderTable();
-                updateStats();
-                return;
             }
 
             try {
@@ -810,14 +752,6 @@
         async function deleteData(id) {
             if (!confirm("Hapus usulan ini secara permanen?")) return;
 
-            if (GOOGLE_SCRIPT_URL.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                usulanDb = usulanDb.filter(i => String(i.id) !== String(id));
-                localStorage.setItem('RKBM_LOCAL_FALLBACK', JSON.stringify(usulanDb));
-                renderTable();
-                updateStats();
-                return;
-            }
-
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -847,9 +781,8 @@
             if (btnCancel) btnCancel.classList.add('hidden');
         }
 
-        // Inisialisasi Saat Halaman Dibuka: Tarik Master & Usulan dari Cloud
+        // Inisialisasi: Mengambil Master & Usulan langsung dari Google Sheets
         window.addEventListener('DOMContentLoaded', () => {
-            populateDatalists();
             loadMasterFromSheets();
             loadDataFromSheets();
         });
