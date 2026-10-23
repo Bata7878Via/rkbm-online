@@ -26,6 +26,14 @@
                 font-size: 15px !important;
             }
         }
+        /* Custom scrollbar untuk dropdown mobile */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 p-3 sm:p-4 md:p-6 min-h-screen relative pb-10">
@@ -71,17 +79,15 @@
                 <span id="masterStatusBadge" class="text-slate-500 block w-full sm:w-auto mt-1 sm:mt-0"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat kamus...</span>
             </div>
 
-            <!-- FITUR BARU: Download Sesuai Jenis Laporan & SKPD -->
+            <!-- FITUR: Download Sesuai Jenis Laporan & SKPD -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <!-- Filter Jenis Laporan untuk Unduh -->
                     <select id="downloadJenisFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-blue-500">
                         <option value="SEMUA">-- Semua Jenis Laporan --</option>
                         <option value="RKBMD">Khusus RKBMD (Pengadaan)</option>
                         <option value="RKPBMD">Khusus RKPBMD (Pemeliharaan)</option>
                     </select>
 
-                    <!-- Filter SKPD untuk Unduh -->
                     <select id="downloadSkpdFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
                         <option value="SEMUA">-- Semua SKPD --</option>
                     </select>
@@ -157,7 +163,7 @@
                     </div>
                 </div>
 
-                <form id="rkbmForm" class="space-y-3.5 sm:space-y-4">
+                <form id="rkbmForm" class="space-y-3.5 sm:space-y-4" autocomplete="off">
                     <input type="hidden" id="editId" value="">
 
                     <!-- Jenis Usulan: RKBMD vs RKPBMD -->
@@ -170,28 +176,45 @@
                         </select>
                     </div>
 
-                    <!-- Input SKPD -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama SKPD / Unit Kerja <span class="text-red-500">*</span></label>
-                        <input type="text" id="skpd" list="skpdOptions" placeholder="Ketik atau pilih SKPD..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required autocomplete="off">
-                        <datalist id="skpdOptions"></datalist>
+                    <!-- INPUT SKPD DENGAN DROPDOWN TOUCH ANDROID KHUSUS -->
+                    <div class="relative" id="skpdDropdownContainer">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Nama SKPD / Unit Kerja <span class="text-red-500">*</span></label>
+                            <span class="text-[10px] text-blue-600 font-semibold cursor-pointer" onclick="toggleSkpdDropdown()">Lihat Daftar</span>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="skpd" onfocus="openSkpdDropdown()" oninput="filterSkpdDropdown()" placeholder="Sentuh / ketik nama SKPD..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 pr-9 text-sm focus:outline-none focus:border-blue-500 focus:bg-white" required autocomplete="off">
+                            <button type="button" onclick="toggleSkpdDropdown()" class="absolute right-0 top-0 bottom-0 px-3 text-slate-400 hover:text-slate-700 focus:outline-none flex items-center justify-center">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+                        <!-- Menu Hasil Pencarian SKPD -->
+                        <div id="skpdDropdownList" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-56 overflow-y-auto z-40 divide-y divide-slate-100 custom-scroll">
+                        </div>
                     </div>
 
-                    <!-- Input Nama & Kode Barang -->
-                    <div class="space-y-2.5 sm:space-y-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100">
-                        <div>
+                    <!-- INPUT NAMA & KODE BARANG DENGAN DROPDOWN TOUCH ANDROID KHUSUS -->
+                    <div class="space-y-2.5 sm:space-y-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100" id="barangDropdownContainer">
+                        <div class="relative">
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-xs font-bold text-slate-700 uppercase">Nama Barang <span class="text-red-500">*</span></label>
-                                <span class="text-[10px] text-emerald-600 font-semibold">Otomatis Kode</span>
+                                <span class="text-[10px] text-emerald-600 font-semibold"><i class="fa-solid fa-bolt mr-0.5"></i>Auto Kode</span>
                             </div>
-                            <input type="text" id="namaBarang" list="namaBarangOptions" oninput="onNamaBarangChange()" placeholder="Ketik Nama Barang..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500" required autocomplete="off">
-                            <datalist id="namaBarangOptions"></datalist>
+                            <div class="relative">
+                                <input type="text" id="namaBarang" onfocus="openBarangDropdown()" oninput="filterBarangDropdown()" placeholder="Sentuh / ketik nama atau kode barang..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 pr-9 text-sm focus:outline-none focus:border-blue-500" required autocomplete="off">
+                                <button type="button" onclick="toggleBarangDropdown()" class="absolute right-0 top-0 bottom-0 px-3 text-slate-400 hover:text-slate-700 focus:outline-none flex items-center justify-center">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Menu Hasil Pencarian Barang -->
+                            <div id="barangDropdownList" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto z-40 divide-y divide-slate-100 custom-scroll">
+                            </div>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kode Barang</label>
-                            <input type="text" id="kodeBarang" list="kodeBarangOptions" oninput="onKodeBarangChange()" placeholder="Kode Barang..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:border-blue-500" autocomplete="off">
-                            <datalist id="kodeBarangOptions"></datalist>
+                            <input type="text" id="kodeBarang" placeholder="Kode Barang otomatis terisi..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:border-blue-500" autocomplete="off">
                         </div>
                     </div>
 
@@ -405,14 +428,61 @@
         </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT LENGKAP -->
+    <!-- SCRIPT JAVASCRIPT UTAMA -->
     <script>
-        // URL APLIKASI WEB ANDA:
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwG1URNYVmPsdpM8Tsfg-ZoOWXGPodtG1wki9uVdK2hAlZ2VsT73DeT9lLu1muqAQht/exec";
 
         let verifiedSessionPin = "";
+        let usulanDb = [];
+        let masterData = {
+            skpdList: [],
+            barangList: []
+        };
 
-        // TAMPILKAN / SEMBUNYIKAN KOLOM KHUSUS PEMELIHARAAN (RKPBMD)
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
+
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+
+        function safeSetHTML(id, html) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = html;
+        }
+
+        function getCleanUrl() {
+            let url = GOOGLE_SCRIPT_URL.trim();
+            if (url.includes('?')) {
+                url = url.split('?')[0];
+            }
+            return url;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            if (!toast || !toastMsg) return;
+
+            toastMsg.innerText = message;
+            
+            if (isError) {
+                toast.classList.remove('bg-emerald-600');
+                toast.classList.add('bg-rose-600');
+            } else {
+                toast.classList.remove('bg-rose-600');
+                toast.classList.add('bg-emerald-600');
+            }
+
+            toast.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-28', 'opacity-0', 'pointer-events-none');
+            }, 3500);
+        }
+
         function togglePemeliharaanFields() {
             const jenis = document.getElementById('jenisUsulan')?.value || "";
             const box = document.getElementById('extraPemeliharaanBox');
@@ -448,57 +518,6 @@
             }
         }
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toastNotification');
-            const toastMsg = document.getElementById('toastMessage');
-            if (!toast || !toastMsg) return;
-
-            toastMsg.innerText = message;
-            
-            if (isError) {
-                toast.classList.remove('bg-emerald-600');
-                toast.classList.add('bg-rose-600');
-            } else {
-                toast.classList.remove('bg-rose-600');
-                toast.classList.add('bg-emerald-600');
-            }
-
-            toast.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
-            toast.classList.add('translate-y-0', 'opacity-100');
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('-translate-y-28', 'opacity-0', 'pointer-events-none');
-            }, 3500);
-        }
-
-        function getCleanUrl() {
-            let url = GOOGLE_SCRIPT_URL.trim();
-            if (url.includes('?')) {
-                url = url.split('?')[0];
-            }
-            return url;
-        }
-
-        function safeSetText(id, text) {
-            const el = document.getElementById(id);
-            if (el) el.innerText = text;
-        }
-
-        function safeSetHTML(id, html) {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = html;
-        }
-
-        let usulanDb = [];
-
-        let masterData = {
-            skpdList: [],
-            barangList: []
-        };
-
-        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
-
         function calculateTotal() {
             const vol = parseFloat(document.getElementById('volume')?.value) || 0;
             const harga = parseFloat(document.getElementById('hargaSatuan')?.value) || 0;
@@ -510,36 +529,121 @@
             safeSetText('labelTotalAnggaran', formatIDR(total));
         }
 
-        function onNamaBarangChange() {
+        // =========================================================================
+        // MOTOR PENCARIAN & DROPDOWN TOUCH KHUSUS HP ANDROID & LAPTOP
+        // =========================================================================
+        
+        // 1. KONTROL DROPDOWN SKPD
+        function openSkpdDropdown() {
+            filterSkpdDropdown();
+            document.getElementById('skpdDropdownList')?.classList.remove('hidden');
+            document.getElementById('barangDropdownList')?.classList.add('hidden');
+        }
+
+        function toggleSkpdDropdown() {
+            const list = document.getElementById('skpdDropdownList');
+            if (list?.classList.contains('hidden')) {
+                openSkpdDropdown();
+            } else {
+                list?.classList.add('hidden');
+            }
+        }
+
+        function filterSkpdDropdown() {
+            const listEl = document.getElementById('skpdDropdownList');
+            const inputVal = (document.getElementById('skpd')?.value || '').trim().toLowerCase();
+            if (!listEl) return;
+
+            const filtered = masterData.skpdList.filter(s => s.toLowerCase().includes(inputVal));
+            
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">SKPD tidak ditemukan</div>`;
+            } else {
+                // Tampilkan maksimal 40 hasil agar cepat di ponsel
+                listEl.innerHTML = filtered.slice(0, 40).map(s => {
+                    const safeName = s.replace(/'/g, "\\'");
+                    return `
+                        <div onclick="selectSkpd('${safeName}')" class="p-2.5 hover:bg-blue-50 active:bg-blue-100 text-xs text-slate-700 cursor-pointer font-medium flex items-center gap-2">
+                            <i class="fa-solid fa-building text-blue-500 text-[10px]"></i>
+                            <span>${s}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+            listEl.classList.remove('hidden');
+        }
+
+        function selectSkpd(val) {
+            const el = document.getElementById('skpd');
+            if (el) el.value = val;
+            document.getElementById('skpdDropdownList')?.classList.add('hidden');
+        }
+
+        // 2. KONTROL DROPDOWN BARANG & KODE BARANG
+        function openBarangDropdown() {
+            filterBarangDropdown();
+            document.getElementById('barangDropdownList')?.classList.remove('hidden');
+            document.getElementById('skpdDropdownList')?.classList.add('hidden');
+        }
+
+        function toggleBarangDropdown() {
+            const list = document.getElementById('barangDropdownList');
+            if (list?.classList.contains('hidden')) {
+                openBarangDropdown();
+            } else {
+                list?.classList.add('hidden');
+            }
+        }
+
+        function filterBarangDropdown() {
+            const listEl = document.getElementById('barangDropdownList');
             const inputVal = (document.getElementById('namaBarang')?.value || '').trim().toLowerCase();
-            const found = masterData.barangList.find(b => b.nama.toLowerCase() === inputVal);
-            const kodeInput = document.getElementById('kodeBarang');
-            if (found && found.kode && kodeInput) kodeInput.value = found.kode;
+            if (!listEl) return;
+
+            const filtered = masterData.barangList.filter(b => 
+                (b.nama && b.nama.toLowerCase().includes(inputVal)) || 
+                (b.kode && b.kode.toLowerCase().includes(inputVal))
+            );
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">Barang tidak ditemukan di kamus master</div>`;
+            } else {
+                listEl.innerHTML = filtered.slice(0, 40).map(b => {
+                    const safeNama = (b.nama || '').replace(/'/g, "\\'");
+                    const safeKode = (b.kode || '').replace(/'/g, "\\'");
+                    return `
+                        <div onclick="selectBarang('${safeNama}', '${safeKode}')" class="p-2.5 hover:bg-blue-50 active:bg-blue-100 cursor-pointer border-b border-slate-50 last:border-0">
+                            <div class="text-xs font-bold text-slate-800">${b.nama}</div>
+                            <div class="text-[10px] font-mono text-blue-600 mt-0.5"><i class="fa-solid fa-tag text-[9px] mr-1"></i>${b.kode || 'Tanpa Kode'}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            listEl.classList.remove('hidden');
         }
 
-        function onKodeBarangChange() {
-            const inputVal = (document.getElementById('kodeBarang')?.value || '').trim();
-            const found = masterData.barangList.find(b => b.kode === inputVal);
-            const namaInput = document.getElementById('namaBarang');
-            if (found && found.nama && namaInput) namaInput.value = found.nama;
+        function selectBarang(nama, kode) {
+            const inputNama = document.getElementById('namaBarang');
+            const inputKode = document.getElementById('kodeBarang');
+            
+            if (inputNama) inputNama.value = nama;
+            if (inputKode) inputKode.value = kode;
+            
+            document.getElementById('barangDropdownList')?.classList.add('hidden');
         }
 
-        function populateDatalists() {
-            const skpdOpt = document.getElementById('skpdOptions');
-            if (skpdOpt) {
-                skpdOpt.innerHTML = masterData.skpdList.map(s => `<option value="${s}"></option>`).join('');
+        // Tutup dropdown otomatis jika pengguna klik/sentuh di luar area input
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('skpdDropdownContainer')?.contains(e.target)) {
+                document.getElementById('skpdDropdownList')?.classList.add('hidden');
             }
-
-            const namaOpt = document.getElementById('namaBarangOptions');
-            if (namaOpt) {
-                namaOpt.innerHTML = masterData.barangList.map(b => `<option value="${b.nama}">${b.kode ? '[' + b.kode + ']' : ''}</option>`).join('');
+            if (!document.getElementById('barangDropdownContainer')?.contains(e.target)) {
+                document.getElementById('barangDropdownList')?.classList.add('hidden');
             }
+        });
 
-            const kodeOpt = document.getElementById('kodeBarangOptions');
-            if (kodeOpt) {
-                kodeOpt.innerHTML = masterData.barangList.map(b => `<option value="${b.kode}">${b.nama}</option>`).join('');
-            }
-
+        // POPULASI FILTER DOWNLOAD EXCEL
+        function updateDownloadSkpdList() {
             const dlSkpdSelect = document.getElementById('downloadSkpdFilter');
             if (dlSkpdSelect) {
                 let optionsHtml = `<option value="SEMUA">-- Semua SKPD (${masterData.skpdList.length}) --</option>`;
@@ -553,14 +657,12 @@
             renderAdminPreviewLists();
         }
 
+        // =========================================================================
+        // DATA SYNC ENGINE (GOOGLE SPREADSHEET VIA GAS)
+        // =========================================================================
         async function loadMasterFromSheets() {
             const url = getCleanUrl();
-            if (url.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                safeSetHTML('masterStatusBadge', 'Mode Demo: URL API belum dikonfigurasi');
-                return;
-            }
-
-            safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat master...');
+            safeSetHTML('masterStatusBadge', '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat kamus...');
 
             try {
                 const res = await fetch(`${url}?action=read_master`);
@@ -568,7 +670,7 @@
                 if (json.status === "success") {
                     masterData.skpdList = json.skpdList || [];
                     masterData.barangList = json.barangList || [];
-                    populateDatalists();
+                    updateDownloadSkpdList();
                 }
             } catch (err) {
                 console.warn("Gagal memuat master:", err);
@@ -584,11 +686,6 @@
             if (mobileCards) mobileCards.innerHTML = `<div class="p-6 text-center text-slate-400 italic text-xs"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data usulan...</div>`;
 
             const url = getCleanUrl();
-            if (url.includes("CONTOH_GANTI_DENGAN_URL_ANDA")) {
-                safeSetText('cloudStatus', 'Mode Demo');
-                return;
-            }
-
             try {
                 const res = await fetch(`${url}?action=read`);
                 const json = await res.json();
@@ -610,14 +707,12 @@
             loadDataFromSheets();
         }
 
-        // PENGHITUNG STATISTIK RESMI RKBMD & RKPBMD
         function updateStats() {
             safeSetText('statTotalItems', usulanDb.length);
             safeSetText('mobileCountBadge', usulanDb.length);
             const totalAnggaran = usulanDb.reduce((acc, curr) => acc + (Number(curr.anggaran) || 0), 0);
             safeSetText('statTotalBudget', formatIDR(totalAnggaran));
             
-            // Perhitungan tepat RKBMD dan RKPBMD
             safeSetText('statRkbmd', usulanDb.filter(i => String(i.jenisUsulan).includes("RKBMD")).length);
             safeSetText('statRkpbm', usulanDb.filter(i => String(i.jenisUsulan).includes("RKPBMD")).length);
         }
@@ -742,7 +837,7 @@
         }
 
         // =========================================================================
-        // FITUR BARU: DOWNLOAD EXCEL BERDASARKAN JENIS LAPORAN & SKPD TERPILIH
+        // EKSPOR LAPORAN EXCEL
         // =========================================================================
         function exportToExcelFiltered() {
             if (usulanDb.length === 0) {
@@ -753,7 +848,6 @@
             const selectedJenis = document.getElementById('downloadJenisFilter')?.value || "SEMUA";
             const selectedSkpd = document.getElementById('downloadSkpdFilter')?.value || "SEMUA";
 
-            // Saring data berdasarkan Jenis Usulan & SKPD
             const dataToExport = usulanDb.filter(item => {
                 const matchSkpd = selectedSkpd === "SEMUA" ? true : String(item.skpd).trim().toLowerCase() === selectedSkpd.trim().toLowerCase();
                 const matchJenis = selectedJenis === "SEMUA" ? true : String(item.jenisUsulan).toUpperCase().includes(selectedJenis.toUpperCase());
@@ -765,11 +859,9 @@
                 return;
             }
 
-            // Tentukan susunan kolom laporan yang sesuai
             let rows = [];
 
             if (selectedJenis === "RKBMD") {
-                // FORMAT LAPORAN KHUSUS RKBMD (PENGADAAN BARU)
                 rows = dataToExport.map((item, idx) => ({
                     "No": idx + 1,
                     "Tanggal Usulan": item.tanggal,
@@ -784,7 +876,6 @@
                     "Keterangan / Urgensi": item.keterangan || ""
                 }));
             } else if (selectedJenis === "RKPBMD") {
-                // FORMAT LAPORAN KHUSUS RKPBMD (PEMELIHARAAN ASET KIB)
                 rows = dataToExport.map((item, idx) => ({
                     "No": idx + 1,
                     "Tanggal Usulan": item.tanggal,
@@ -802,7 +893,6 @@
                     "Keterangan Urgensi / Kerusakan": item.keterangan || ""
                 }));
             } else {
-                // FORMAT LAPORAN GABUNGAN (SEMUA JENIS)
                 rows = dataToExport.map((item, idx) => ({
                     "No": idx + 1,
                     "Tanggal Usulan": item.tanggal,
@@ -821,7 +911,6 @@
                 }));
             }
 
-            // Nama File Otomatis & Rapi
             const safeSkpd = selectedSkpd === "SEMUA" ? "Semua_SKPD" : selectedSkpd.replace(/[^a-zA-Z0-9]/g, "_");
             const filePrefix = `Laporan_${selectedJenis}_${safeSkpd}`;
             const today = new Date().toISOString().slice(0, 10);
@@ -832,6 +921,9 @@
             XLSX.writeFile(wb, `${filePrefix}_${today}.xlsx`);
         }
 
+        // =========================================================================
+        // KONTROL ADMIN MASTER
+        // =========================================================================
         function openAdminAuthModal() {
             document.getElementById('pinErrorMsg')?.classList.add('hidden');
             const pinInput = document.getElementById('adminPinInput');
@@ -950,7 +1042,9 @@
             }
         }
 
-        // SIMPAN / UPDATE USULAN KE DATABASE
+        // =========================================================================
+        // FORM SUBMIT / SAVE DATA
+        // =========================================================================
         document.getElementById('rkbmForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -1073,6 +1167,9 @@
 
             const editId = document.getElementById('editId');
             if (editId) editId.value = "";
+
+            document.getElementById('skpdDropdownList')?.classList.add('hidden');
+            document.getElementById('barangDropdownList')?.classList.add('hidden');
 
             togglePemeliharaanFields();
 
